@@ -1,6 +1,10 @@
-// set the environment grid value
-let cols = 30;
-let rows = 30;
+// set the environment  value
+let cols = 20;
+let rows = 20;
+let chanceToBeWall = 0.3;
+let hSize = 400;
+let wSize = 400;
+
 // 
 let openSet = [];
 let closedSet = []
@@ -13,8 +17,9 @@ let w, h;
 let grid = new Array(cols);
 //
 let path = [];
-
 let current;
+let noSolution = false;
+
 
 function Node(i, j){
     // Location
@@ -29,8 +34,16 @@ function Node(i, j){
     this.neighbors = [];
     this.previous = undefined;
 
+    this.wall = false
+    
+    if (random(1) < chanceToBeWall) {
+        this.wall = true
+    }
     this.show = function(col){
         fill(col);
+        if (this.wall){
+            fill(0);
+        }
         stroke(0);
         rect(this.i * w, this.j * h, w - 1, w - 1);
     }
@@ -39,7 +52,7 @@ function Node(i, j){
         let i = this.i;
         let j = this.j;
 
-        // add the neighbor 
+        // add the neighbor vertical and horizontal
         if (i < cols - 1){
             this.neighbors.push(grid[i+ 1][j]);
         }
@@ -51,6 +64,20 @@ function Node(i, j){
         }
         if (j > 0){
             this.neighbors.push(grid[i][j - 1]);
+        }
+
+        // add the diogonal neighbor
+        if (i > 0 && j > 0) {
+            this.neighbors.push(grid[i - 1][j - 1]);
+        }
+        if (i < cols - 1 && j > 0) {
+            this.neighbors.push(grid[i + 1][j - 1]);
+        }
+        if (i > 0 && j < rows - 1) {
+            this.neighbors.push(grid[i - 1][j + 1]);
+        }
+        if (i < cols - 1 && j > 0) {
+            this.neighbors.push(grid[i + 1][j + 1]);
         }
     }
 }
@@ -70,7 +97,9 @@ function heuristic(a, b){
 
 // good to go
 function setup() {
-    createCanvas(400, 400);
+    createCanvas(wSize, hSize);
+
+    // noLoop();
 
     // set value for the grid 
     w = width / cols;
@@ -98,6 +127,8 @@ function setup() {
     // set start and destination
     start = grid[0][0];
     end = grid[cols - 1][rows - 1];
+    start.wall = false;
+    end.wall = false;
 
     // add it to the start of openset
     openSet.push(start);
@@ -148,9 +179,9 @@ function draw(){
         for (var i = 0; i < neighbors.length; i++){
             // set neigbor node for evaluation 
             let neighbor = neighbors[i];
-
+            
             // check if it has been evaluated before
-            if (!closedSet.includes(neighbor)){
+            if (!closedSet.includes(neighbor) && !neighbor.wall){
                 let tempG = current.g + 1;
 
                 // check node in the open set if the temG is a better g
@@ -172,7 +203,9 @@ function draw(){
         }
     }
     else{
-        // no solution
+        console.log("No solution!!")
+        noSolution = true;
+        noLoop();
     }
 
     // visualization loop
@@ -190,14 +223,16 @@ function draw(){
         openSet[i].show(color(0, 255, 0));
     }
 
-    path = []
-    let temp = current;
-    path.push(temp);
-    while (temp.previous != undefined) {
-        path.push(temp.previous);
-        temp = temp.previous;
+    if(!noSolution){
+        path = []
+        let temp = current;
+        path.push(temp);
+        while (temp.previous != undefined) {
+            path.push(temp.previous);
+            temp = temp.previous;
+        }
     }
-
+    
     for (let i = 0; i < path.length; i++){
         path[i].show(color(0, 0, 255));
     }
