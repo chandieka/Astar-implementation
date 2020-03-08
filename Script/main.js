@@ -2,8 +2,8 @@
 let cols = 50;
 let rows = 50;
 let chanceToBeWall = 0.3;
-let hSize = 700;
-let wSize = 700;
+let hSize = 750;
+let wSize = 750;
 
 // 
 let openSet = [];
@@ -241,4 +241,14 @@ function draw(){
     for (let i = 0; i < path.length; i++){
         path[i].show(color(0, 0, 255));
     }
+
+    noFill();
+    stroke(255);
+    beginShape();
+
+    for (let i = 0; i < path.length; i++) {
+        vertex(path[i].i*w, path[i].j * h);
+    }
+
+    endShape();
 }
