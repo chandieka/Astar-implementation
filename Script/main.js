@@ -1,9 +1,12 @@
 // set the environment  value
 let cols = 50;
 let rows = 50;
-let chanceToBeWall = 0.3;
+let chanceToBeWall = 0.4;
 let hSize = 750;
 let wSize = 750;
+
+let xDest = 40;
+let yDest = 20;
 
 // 
 let openSet = [];
@@ -126,7 +129,7 @@ function setup() {
 
     // set start and destination
     start = grid[0][0];
-    end = grid[cols - 1][rows - 1];
+    end = grid[xDest][yDest];
     start.wall = false;
     end.wall = false;
 
@@ -242,6 +245,8 @@ function draw(){
         path[i].show(color(0, 0, 255));
     }
 
+
+    // add line to the solution path
     noFill();
     stroke(255);
     beginShape();
