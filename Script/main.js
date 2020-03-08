@@ -1,9 +1,9 @@
 // set the environment  value
-let cols = 20;
-let rows = 20;
+let cols = 50;
+let rows = 50;
 let chanceToBeWall = 0.3;
-let hSize = 400;
-let wSize = 400;
+let hSize = 700;
+let wSize = 700;
 
 // 
 let openSet = [];
@@ -180,25 +180,30 @@ function draw(){
             // set neigbor node for evaluation 
             let neighbor = neighbors[i];
             
-            // check if it has been evaluated before
-            if (!closedSet.includes(neighbor) && !neighbor.wall){
-                let tempG = current.g + 1;
+            if (neighbor != undefined){
+                // check if it has been evaluated before
+                if (!closedSet.includes(neighbor) && !neighbor.wall) {
+                    let tempG = current.g + 1;
 
-                // check node in the open set if the temG is a better g
-                if (openSet.includes(neighbor)) {
-                    if (tempG < neighbor.g){
+                    // check node in the open set if the temG is a better g
+                    if (openSet.includes(neighbor)) {
+                        if (tempG < neighbor.g) {
+                            neighbor.g = tempG;
+                        }
+                    } else {
                         neighbor.g = tempG;
+                        openSet.push(neighbor);
                     }
-                } else {
-                    neighbor.g = tempG;
-                    openSet.push(neighbor);
-                }
 
-                // find the distance between it and the destication 
-                neighbor.h = heuristic(neighbor, end);
-                // set score of that node 
-                neighbor.f = neighbor.g + neighbor.h;
-                neighbor.previous = current;
+                    // find the distance between it and the destication 
+                    neighbor.h = heuristic(neighbor, end);
+                    // set score of that node 
+                    neighbor.f = neighbor.g + neighbor.h;
+                    neighbor.previous = current;
+                }
+            }
+            else{
+                console.log(i);
             }
         }
     }
@@ -237,7 +242,3 @@ function draw(){
         path[i].show(color(0, 0, 255));
     }
 }
-
-console.log(openSet);
-console.log(closedSet);
-console.log(grid);
