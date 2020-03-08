@@ -1,40 +1,76 @@
 // set the environment grid value
-let cols = 10;
-let rows = 10;
-
+let cols = 30;
+let rows = 30;
 // 
 let openSet = [];
 let closedSet = []
-
-// destination and 
+// start and destination position 
 let start;
 let end;
-
 // heing and witdh of the canvas
 let w, h;
-
 // 1D array setup
 let grid = new Array(cols);
+//
+let path = [];
 
-function Node(x, y){
+let current;
+
+function Node(i, j){
     // Location
-    this.x = x;
-    this.y = y
+    this.i = i;
+    this.j = j;
 
     // Value to compare 
     this.f = 0;
     this.g = 0;
     this.h = 0;
 
+    this.neighbors = [];
+    this.previous = undefined;
+
     this.show = function(col){
         fill(col);
         stroke(0);
-        rect(this.x * w, this.y * h, w - 1, w - 1);
+        rect(this.i * w, this.j * h, w - 1, w - 1);
+    }
+
+    this.addNeighbors = function(grid){
+        let i = this.i;
+        let j = this.j;
+
+        // add the neighbor 
+        if (i < cols - 1){
+            this.neighbors.push(grid[i+ 1][j]);
+        }
+        if (i > 0){
+            this.neighbors.push(grid[i - 1][j]);
+        }
+        if (j < rows - 1){
+            this.neighbors.push(grid[i][j + 1]);
+        }
+        if (j > 0){
+            this.neighbors.push(grid[i][j - 1]);
+        }
     }
 }
 
+function RemoveFromArray(array, element){
+    for (var i = array.length - 1; i >= 0; i--){
+        if (array[i] == element){
+            array.splice(i, 1);
+        }
+    }
+}
+
+function heuristic(a, b){
+    let d = abs(a.i - b.i) + abs(a.j - b.j)
+    return d;
+}
+
+// good to go
 function setup() {
-    createCanvas(500, 500);
+    createCanvas(400, 400);
 
     // set value for the grid 
     w = width / cols;
@@ -52,25 +88,94 @@ function setup() {
         }
     }
 
+    // assign neighbor for each node
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+            grid[i][j].addNeighbors(grid);
+        }
+    }
+
     // set start and destination
     start = grid[0][0];
     end = grid[cols - 1][rows - 1];
 
+    // add it to the start of openset
     openSet.push(start);
 }
 
 function draw(){
-    // visualization loop
-
+    background(0);
+    /**
+     * A* Algorithim
+     */
     if (openSet.length > 0) {
-        //w we can keep going
+        // the node in openSet having the lowest fScore[] value
+        var winner = 0;
+
+        for (let i = 0; i < openSet.length; i++) {
+            // compare with the existing node in openset
+            if (openSet[i].f < openSet[winner].f){
+                // set the Node with the lowest 
+                // value of f in the winner index
+                winner = i;
+            }
+        }
+
+        // use the winner node to compare in the next part 
+        // current is the node with the lowest f score
+        current = openSet[winner];
+        
+        if (current === end){
+            // find the path
+            path = []
+            let temp = current;
+            path.push(temp);
+            while (temp.previous != undefined) {
+                path.push(temp.previous);
+                temp = temp.previous;
+            }
+            noLoop();
+            console.log("DONE!!")
+        }
+        
+        // put it into the closeSet as it will be evaluated
+        RemoveFromArray(openSet, current);
+        closedSet.push(current);
+
+        // evaluate current posisition by 
+        // checking every neighbor 
+        let neighbors = current.neighbors;
+        for (var i = 0; i < neighbors.length; i++){
+            // set neigbor node for evaluation 
+            let neighbor = neighbors[i];
+
+            // check if it has been evaluated before
+            if (!closedSet.includes(neighbor)){
+                let tempG = current.g + 1;
+
+                // check node in the open set if the temG is a better g
+                if (openSet.includes(neighbor)) {
+                    if (tempG < neighbor.g){
+                        neighbor.g = tempG;
+                    }
+                } else {
+                    neighbor.g = tempG;
+                    openSet.push(neighbor);
+                }
+
+                // find the distance between it and the destication 
+                neighbor.h = heuristic(neighbor, end);
+                // set score of that node 
+                neighbor.f = neighbor.g + neighbor.h;
+                neighbor.previous = current;
+            }
+        }
     }
     else{
         // no solution
     }
 
-    background(0);
-
+    // visualization loop
     for (let i = 0; i < cols; i++){
         for (let j = 0; j < rows; j++){
             grid[i][j].show(color(255));
@@ -84,4 +189,20 @@ function draw(){
     for (let i = 0; i < openSet.length; i++) {
         openSet[i].show(color(0, 255, 0));
     }
+
+    path = []
+    let temp = current;
+    path.push(temp);
+    while (temp.previous != undefined) {
+        path.push(temp.previous);
+        temp = temp.previous;
+    }
+
+    for (let i = 0; i < path.length; i++){
+        path[i].show(color(0, 0, 255));
+    }
 }
+
+console.log(openSet);
+console.log(closedSet);
+console.log(grid);
